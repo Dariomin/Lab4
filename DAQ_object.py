@@ -44,12 +44,17 @@ buffer = ""
     # 3) il numero di iterazioni per formare il dato L'HO TOLTO MA POTREI AVER SBAGLIATO, VEDERE A RICEVIMENTO
     
 class Dato:
-    def __init__(self, dato, time):
-        self.dato = dato 
+    def __init__(self, hr, temp, time):
+        self.hr = hr
+        self.temp = temp
         self.time = time
         
-    def get_attribute(self):
-         return f"Attributi dell'oggetto:\nDato = {self.dato}\nTempo di Acquisizione = {self.time}"
+        
+    def get_data(self):
+         return f"Attributi dell'oggetto:\nDato: HR = {self.hr} , T  = {self.temp}"
+     
+    def get_time(self):
+        return f"Tempo di Acquisizione = {self.time}"
         
 lista_dati = []
 
@@ -178,7 +183,7 @@ with open(file_name, "w") as file:
                 if posizioni:
                     for i in range(len(posizioni)-1):
                         singolo_dato = buffer[posizioni[i]:posizioni[i+1]]
-                        oggetto = Dato(singolo_dato, daq_time)
+                        oggetto = Dato(singolo_dato[4:7], singolo_dato[8:11], daq_time)
                         lista_dati.append(oggetto)
                         
                     if len(posizioni) == 1:
@@ -202,42 +207,16 @@ with open(file_name, "w") as file:
                             oggetto_new = Dato(data_save, daq_time)
                             lista_dati.append(oggetto_new)
                             file.write(f"{lista_dati[i].dato},{lista_dati[i].time}" for i in lista_dati)
+                            file.flush()
+                            buffer = buffer[index + 12 :]                        
+                        
+                    else:
+                            print(f"Dati nel buffer non accettabili")
+                            file.flush() # forza il programma a scrivere sul file PRIMA della chiusura della seriale
                             
+ser.close()
                         
-                        
-                        
-                    
-                    
-                    
-                    
-                    if len(buffer) >=12:
-                        print("Pacchetto dati accettabile")
-                        
-                        
-                        
-                                
-                
-                # === CREAZIONI DEGLI ATTRIBUTI ===
-                
-                
-                                    
-                
-                
-                
-                
-                
-                
-
-            
-            
         
             
         
         
-        
-        
-        
-
-
- 
- 
