@@ -44,10 +44,17 @@ buffer = ""
     # 3) il numero di iterazioni per formare il dato L'HO TOLTO MA POTREI AVER SBAGLIATO, VEDERE A RICEVIMENTO
     
 class Dato:
-    def __init__(self, hr, temp, time):
-        self.hr = hr
-        self.temp = temp
+    def __init__(self, hex_string, time):
+        self.hex_string = hex_string
         self.time = time
+        
+        if len(hex_string) >= 12:
+            self.hr = hex_string[4:8]
+            self.temp = hex_string[8:12]
+            
+        else:
+            self.hr = "DATO NON VALIDO"
+            self.temp = "DATO NON VALIDO"
         
         
     def get_data(self):
@@ -67,7 +74,7 @@ def Discard(buffer, discardEnable):
         # .find() restituisce -1 se non trova l'elemento
         
         if position != -1: # == se l'ha trovato
-            print(f"Trovato patter {pattern} in {buffer} nella posizione {position}")
+            print(f"Trovato patter {pattern} in {buffer} nella posizion {position}")
             print(f"Dati scartati {buffer[:position]}")
             
             # aggiorno il buffer per la prima volta
@@ -111,7 +118,8 @@ file_name = f"Gruppo03_{ty}-{tmon}-{tday}T{thour}-{tmin}-{tsec}"
 
 # inizializzo la seriale 
 
-ser = serial.Serial(port="/dev/ttyUSB1", baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=0)
+# ser = serial.Serial(port="/dev/ttyUSB1", baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=0)
+ser = serial.Serial(port="COM3", baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=0)
 
 ser.reset_input_buffer() # svuoto l'input della seriale, ossia il buffer (variabile temporanea)
 
@@ -162,7 +170,7 @@ with open(file_name, "w") as file:
                 
                 buffer_temp, discardEnable = Discard(buffer, discardEnable)
                 
-                buffer = buffer_temp # primo set di dati che abbiamo -> NON E' DETTO CHE VADA BENE
+                buffer = buffer_temp # primo set di dati che abbiamo 
                 
                 print(f"Dato rimanente rilevato: {buffer}")
                 
@@ -183,8 +191,18 @@ with open(file_name, "w") as file:
                 if posizioni:
                     for i in range(len(posizioni)-1):
                         singolo_dato = buffer[posizioni[i]:posizioni[i+1]]
-                        oggetto = Dato(singolo_dato[4:7], singolo_dato[8:11], daq_time)
-                        lista_dati.append(oggetto)
+                        
+                        if len(singolo_dato) >=12:
+                            singolo_dato_valido = Dato(singolo_dato[:12], daq_time)
+                            lista_dati.append(singolo_dato_valido)
+                             # oggetto = Dato(singolo_dato[4:7], singolo_dato[8:11], daq_time)
+                            print(f"Dato {singolo_dato_valido} valido")
+                            
+                            # ora lo trascrivo sul file testo
+                            
+                            file.write()
+                            file.flush() # forzo il codice a scrivere sul file prima che la porta si chiuda
+            
                         
                     if len(posizioni) == 1:
                         oggetto =  Dato(buffer[posizioni[0]:], daq_time)
@@ -193,13 +211,15 @@ with open(file_name, "w") as file:
                     # ora aggiorno il buffer dalla posizione che ho trovato in poi
                     # quindi inizierà con AAAA0    
                     
+# === PARTE RESIDUA DI DATI PRESENTE NEL BUFFER ===
+                    
                     buffer = buffer[posizioni[-1]:] 
                     
                     print(f"lista dei dati ottenuti: {lista_dati}")    
                     print(f"pacchetto di dato incompleto: {buffer}")
                     
                     if len(buffer) >= 12:
-                        print(f"Dato rimanente  accettabile")
+                        print(f"Dato rimanente  accettabile.")
                         
                         if len(buffer) - index >= 12:
                             print("Possibile pacchetto dati nel buffer")
